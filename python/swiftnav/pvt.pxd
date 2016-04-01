@@ -50,6 +50,12 @@ cdef extern from "libswiftnav/pvt.h":
               gnss_solution *soln,
               dops_t *dops)
 
+  s8 pvt_iter(double rx_state[],
+              const u8 n_used,
+              const navigation_measurement_t *nav_meas[],
+              double omp[],
+              double H[4][4])
+
 cdef class GNSSSolution:
   cdef public gnss_solution _thisptr
 

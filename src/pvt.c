@@ -311,11 +311,11 @@ static bool residual_test(u8 n_used, double omp[n_used],
  *
  *  Results stored in rx_state, omp, H
  */
-static s8 pvt_iter(double rx_state[],
-                   const u8 n_used,
-                   const navigation_measurement_t *nav_meas[n_used],
-                   double omp[n_used],
-                   double H[4][4])
+s8 pvt_iter(double rx_state[],
+            const u8 n_used,
+            const navigation_measurement_t *nav_meas[n_used],
+            double omp[n_used],
+            double H[4][4])
 {
   /* Reset state to zero */
   for(u8 i=4; i<8; i++) {

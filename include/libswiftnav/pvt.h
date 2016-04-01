@@ -85,4 +85,10 @@ s8 calc_PVT(const u8 n_used,
             gnss_solution *soln,
             dops_t *dops);
 
+s8 pvt_iter(double rx_state[],
+            const u8 n_used,
+            const navigation_measurement_t *nav_meas[n_used],
+            double omp[n_used],
+            double H[4][4]);
+
 #endif /* LIBSWIFTNAV_PVT_H */

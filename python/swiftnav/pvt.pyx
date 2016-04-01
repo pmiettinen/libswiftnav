@@ -7,7 +7,7 @@
 # EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
 # WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
 
-from libc.stdlib cimport malloc, free
+from libc.stdlib cimport malloc, free, calloc
 from libc.string cimport memset
 from track cimport NavigationMeasurement
 from track cimport navigation_measurement_t
@@ -70,3 +70,44 @@ def calc_PVT_(nav_meas, disable_raim=False):
     warnings.warn(_calc_pvt_codes[ret])
   free(nav_meas_)
   return (ret, soln, dops_)
+
+def pvt_iter_(nav_meas):
+  """Wraps the function :libswiftnav:`pvt_iter`.
+
+  Parameters
+  ----------
+  nav_meas : [NavigationMeasurement]
+    Navigation measurements
+
+  Returns
+  -------
+  ret:
+   * `0`: solution converged
+   * `-1`: solution failed to converge
+  rx_state
+   * format: pos[3], clock error, vel[3], intermediate freq error
+  omp
+   * "observed minus predicted" range -- this is E, the
+     prediction error vector (or innovation vector in Kalman/LS
+     filtering terms).
+  """
+  n_used = len(nav_meas)
+  cdef const navigation_measurement_t **nav_meas_pointers = <const navigation_measurement_t **>calloc(n_used, sizeof(navigation_measurement_t *))
+  for n in xrange(n_used):
+    nav_meas_pointers[n] = &(<NavigationMeasurement?>nav_meas[n])._thisptr
+  state_size = 8
+  cdef double *rx_state = <double *>calloc(state_size, sizeof(double))
+  cdef double *omp = <double *>calloc(n_used, sizeof(double))
+  cdef double H[4][4]
+  cdef s8 ret = pvt_iter(rx_state, n_used, nav_meas_pointers, omp, H)
+  omp_out = []
+  rx_state_out = []
+  for n in xrange(state_size):
+    rx_state_out.append(rx_state[n])
+  for n in xrange(n_used):
+    omp_out.append(omp[n])
+  free(nav_meas_pointers)
+  free(rx_state)
+  free(omp)
+  return (ret, omp_out, rx_state_out)
+
